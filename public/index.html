@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Servicio Web - Contactos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="contenedor">
+    <header class="encabezado">
+      <h1>Servicio Web de Contactos</h1>
+      <p>Consulta de contactos desde el servicio externo</p>
+    </header>
+
+    <section class="panel">
+      <div class="panel-top">
+        <h2>Lista de contactos</h2>
+        <button id="btnCargar">Actualizar lista</button>
+      </div>
+
+      <p id="estado" class="estado">Cargando contactos...</p>
+
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-numero">#</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Teléfono</th>
+            </tr>
+          </thead>
+          <tbody id="tablaContactos"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const tablaContactos = document.getElementById("tablaContactos");
+    const estado = document.getElementById("estado");
+    const btnCargar = document.getElementById("btnCargar");
+
+    async function cargarContactos() {
+      estado.textContent = "Cargando contactos...";
+      tablaContactos.innerHTML = "";
+
+      try {
+        const respuesta = await fetch("/api/contactos");
+        const datos = await respuesta.json();
+
+        if (!datos.exito) {
+          estado.textContent = "No se pudieron cargar los contactos.";
+          return;
+        }
+
+        estado.textContent = `Total de contactos: ${datos.total}`;
+
+        datos.contactos.forEach((contacto, index) => {
+          const fila = document.createElement("tr");
+
+          fila.innerHTML = `
+            <td class="col-numero">${index + 1}</td>
+            <td>${contacto.nombre ?? ""}</td>
+            <td>${contacto.apellido ?? ""}</td>
+            <td>${contacto.telefono ?? ""}</td>
+          `;
+
+          tablaContactos.appendChild(fila);
+        });
+      } catch (error) {
+        estado.textContent = "Ocurrió un error al consultar el servicio.";
+      }
+    }
+
+    btnCargar.addEventListener("click", cargarContactos);
+
+    cargarContactos();
+  </script>
+</body>
+</html>
